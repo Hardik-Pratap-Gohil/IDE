@@ -1,15 +1,12 @@
 package com.example.ide.assembler;
 
 
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.*;
 import java.util.List;
 import java.util.Scanner;
 
 public class RiscVAssembler {
-    public static void main(String[] args) {
-        // Set the file path directly here
-        String filePath = "resources/program.asm";  // Set your file path here
+    public static void assemble(String filePath) {
 
         // Read the assembly code from the file
         String code = readFile(filePath);
@@ -19,14 +16,34 @@ public class RiscVAssembler {
             return;
         }
 
+        // Determine the filename from the input path
+        File inputFile = new File(filePath);
+        String filename = inputFile.getName();
+        String outputFileName = filename.substring(0, filename.lastIndexOf('.')) + ".bin";
+
+        // Define the output directory and ensure it exists
+        String outputDir = "src/main/resources/com/example/ide/output/";
+        File directory = new File(outputDir);
+        if (!directory.exists()) {
+            directory.mkdirs();  // Make the directory structure if it does not exist
+        }
+
+        String outputFilePath = outputDir + outputFileName;
+        System.out.println(outputFilePath);
         // Parse the code and convert it to instructions
         Parser parser = new Parser();
         List<Instruction> instructions = parser.parse(code);
 
-        // Convert each instruction to machine code and print
-        for (Instruction instruction : instructions) {
-            String machineCode = instruction.toMachineCode();
-            System.out.println("Machine Code: " + machineCode);
+        // Write the machine code to the specified file
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputFilePath))) {
+            for (Instruction instruction : instructions) {
+                String machineCode = instruction.toMachineCode();
+                writer.write(machineCode);
+                writer.newLine();  // Optionally add a new line for each instruction
+            }
+            System.out.println("Machine code written to: " + outputFilePath);
+        } catch (IOException e) {
+            System.out.println("Error writing to file: " + e.getMessage());
         }
     }
 
