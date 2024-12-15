@@ -1,19 +1,16 @@
 package com.example.ide;
 
-import com.example.ide.assembler.RiscVAssembler;
+import com.example.ide.assembler.RISCV.AssemblerError;
+import com.example.ide.assembler.RISCV.RiscVAssembler;
 import com.example.ide.file.FileManager;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.io.File;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class HelloController implements Initializable {
 
@@ -90,10 +87,19 @@ public class HelloController implements Initializable {
 
         // Proceed with assembling only if there is a file to assemble
         if (filePath != null) {
-            RiscVAssembler.assemble(filePath);
-            statusLabel.setText("Assembly completed for " + new File(filePath).getName());
+            outputTextArea.clear(); // Clear any previous output
+            List<AssemblerError> errors = RiscVAssembler.assemble(filePath, outputTextArea);
+
+            if (errors.isEmpty()) {
+                statusLabel.setText("Assembly completed successfully for " + new File(filePath).getName());
+                outputTextArea.appendText("Assembly completed successfully.\n");
+            } else {
+                statusLabel.setText("Assembly completed with errors for " + new File(filePath).getName());
+                toggleOutput(); // Ensure the output console is visible
+            }
         }
     }
+
 
 
     public void toggleOutput() {
