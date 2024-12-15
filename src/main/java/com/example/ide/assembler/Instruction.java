@@ -68,7 +68,7 @@ public class Instruction {
             // Construct the R-type instruction format for "add"
             return "0000000" + rs2 + rs1 + "100" + rd + "0110011"; // Example: "00000000001000110000000110110011"
         }
-        return "Invalid operands for add instruction";
+        return "Invalid operands for xor instruction";
     }
 
     private String convertOrInstruction() {
@@ -80,7 +80,7 @@ public class Instruction {
             // Construct the R-type instruction format for "add"
             return "0000000" + rs2 + rs1 + "110" + rd + "0110011"; // Example: "00000000001000110000000110110011"
         }
-        return "Invalid operands for add instruction";
+        return "Invalid operands for or instruction";
     }
 
     private String convertAndInstruction() {
@@ -92,7 +92,7 @@ public class Instruction {
             // Construct the R-type instruction format for "add"
             return "0000000" + rs2 + rs1 + "111" + rd + "0110011"; // Example: "00000000001000110000000110110011"
         }
-        return "Invalid operands for add instruction";
+        return "Invalid operands for and instruction";
     }
 
 
