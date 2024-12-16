@@ -99,7 +99,7 @@ public class Parser {
         switch (opcode) {
             case ADD: case SUB: case AND: case OR: case XOR:
                 return 3;
-            case ADDI: case ANDI: case ORI: case XORI: case LW:
+            case ADDI: case ANDI: case ORI: case XORI: case LW: case LB: case LH:
                 return 3;
             case SW: case SH: case SB:
                 return 3;
@@ -107,6 +107,8 @@ public class Parser {
                 return 3;
             case JAL: case LUI:
                 return 2;
+            case FADD: case FDIV: case FMAX: case FMIN: case FMUL: case  FSQRT: case FSUB:
+                return 3;
             default:
                 return 0;
         }

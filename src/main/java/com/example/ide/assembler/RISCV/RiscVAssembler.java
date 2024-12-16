@@ -11,6 +11,7 @@ import java.util.Scanner;
 import static com.example.ide.assembler.util.outputFilePath;
 
 public class RiscVAssembler {
+
     public static List<AssemblerError> assemble(String filePath, TextArea outputTextArea) {
         List<AssemblerError> errors = new ArrayList<>();
 
@@ -30,7 +31,7 @@ public class RiscVAssembler {
             displayErrors(errors, outputTextArea);
             return errors;
         }
-
+        System.out.println(tokens);
         Parser parser = new Parser(errors, outputTextArea);
         List<Instruction> instructions;
         try {
@@ -40,6 +41,7 @@ public class RiscVAssembler {
             displayErrors(errors, outputTextArea);
             return errors;
         }
+        System.out.println(instructions);
 
         // Write machine code to file
         String outputFilePath = outputFilePath(filePath);

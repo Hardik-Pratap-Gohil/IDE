@@ -1,6 +1,5 @@
 package com.example.ide.assembler.RISCV;
 
-
 import javafx.scene.control.TextArea;
 
 import java.util.ArrayList;
@@ -73,7 +72,7 @@ public class Lexer {
                     addToken(TokenType.COMMA, ",");
                     break;
                 default:
-                    if (isDigit(c) || c == '-' || c == '0') {
+                    if (isDigit(c) || c == '-') {
                         number();
                     } else if (isAlpha(c)) {
                         identifier();
@@ -84,41 +83,64 @@ public class Lexer {
             }
         } catch (Exception e) {
             throw new IllegalArgumentException("Syntax error at line " + line + ": " + e.getMessage());
-
         }
     }
 
     // Processes numbers (immediate values)
     private void number() {
+        System.out.println("Number detected at start: " + source.charAt(start));
+        System.out.println("Number detected at current: " + source.charAt(current));
+        // Check for optional negative sign
         if (source.charAt(start) == '-') {
             advance(); // Consume '-'
         }
-        // Hexadecimal
-        if (peek() == '0' && (peekNext() == 'x' || peekNext() == 'X')) {
-            advance();
-            advance();
-            while (isHexDigit(peek())) advance();
+
+        // Hexadecimal number check
+        if (source.charAt(start) == '0' && (peek() == 'x' || peek() == 'X')) {
+            advance(); // Consume '0'
+
+            System.out.println("Hexadecimal detected");
+
+            // Capture the actual hex digits
+            int hexStart = current; // Start of actual hex digits
+            while (isHexDigit(peek())) {
+                advance();
+            }
+
+            if (hexStart == current) { // No hex digits found
+                throw new IllegalArgumentException("Invalid hexadecimal value at line " + line);
+            }
+
+
             String lexeme = source.substring(start, current);
-            int value = Integer.parseInt(lexeme.substring(2), 16);
-            addToken(TokenType.IMM, lexeme, value);
+            String hexDigits = source.substring(hexStart, current); // Only the digits
+            int value = Integer.parseInt(hexDigits, 16);
+            addToken(TokenType.IMM, lexeme, value); // Add token with full lexeme including "0x"
             return;
         }
-        // Decimal
-        while (isDigit(peek())) advance();
+
+        // Decimal number handling
+        while (isDigit(peek())) {
+            advance();
+        }
+
+        if (start == current) { // No digits found
+            throw new IllegalArgumentException("Invalid numeric value at line " + line);
+        }
+
         String lexeme = source.substring(start, current);
-        int value = Integer.parseInt(lexeme);
+        int value = Integer.parseInt(lexeme); // Parse decimal
         addToken(TokenType.IMM, lexeme, value);
     }
 
-
-
     // Processes identifiers (instructions, registers, labels)
     private void identifier() {
-        while (isAlphaNumeric(peek())) advance();
+        while (isAlphaNumeric(peek())) {
+            advance();
+        }
 
         // Extract the lexeme
         String lexeme = source.substring(start, current);
-
         // Match it to a TokenType
         TokenType type = getTokenType(lexeme);
         addToken(type, lexeme);
@@ -165,17 +187,6 @@ public class Lexer {
         throw new IllegalArgumentException("Unrecognized token: " + token + " at line " + line);
     }
 
-    // Utility to parse immediate values
-    private Object parseImmediate(String token) {
-        if (token.startsWith("0x") || token.startsWith("0X")) {
-            return Integer.parseInt(token.substring(2), 16); // Hexadecimal
-        } else if (token.startsWith("0b") || token.startsWith("0B")) {
-            return Integer.parseInt(token.substring(2), 2); // Binary
-        } else {
-            return Integer.parseInt(token); // Decimal
-        }
-    }
-
     // Advances the current pointer and returns the consumed character
     private char advance() {
         return source.charAt(current++);
@@ -187,27 +198,22 @@ public class Lexer {
         return source.charAt(current);
     }
 
-    // Checks if we've reached the end of the source
-    private boolean isAtEnd() {
-        return current >= source.length();
-    }
-
     private char peekNext() {
         if (current + 1 >= source.length()) return '\0';
         return source.charAt(current + 1);
     }
 
-    // Utility methods for character checks
+    // Checks if we've reached the end of the source
+    private boolean isAtEnd() {
+        return current >= source.length();
+    }
+
     private boolean isDigit(char c) {
         return c >= '0' && c <= '9';
     }
 
     private boolean isHexDigit(char c) {
         return isDigit(c) || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f');
-    }
-
-    private boolean isBinaryDigit(char c) {
-        return c == '0' || c == '1';
     }
 
     private boolean isAlpha(char c) {
@@ -218,7 +224,6 @@ public class Lexer {
         return isAlpha(c) || isDigit(c);
     }
 
-    // Adds a token to the list
     private void addToken(TokenType type, String lexeme) {
         addToken(type, lexeme, null);
     }
@@ -227,8 +232,6 @@ public class Lexer {
         tokens.add(new Token(type, lexeme, literal, line));
     }
 
-
-    // Skip to the next line after an error
     private void skipToNextLine() {
         while (!isAtEnd() && peek() != '\n') {
             advance();
