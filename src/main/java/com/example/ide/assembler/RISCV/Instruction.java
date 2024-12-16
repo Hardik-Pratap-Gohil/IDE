@@ -36,13 +36,13 @@ public class Instruction {
                 case XOR -> convertRTypeInstruction("0000000", "100"); // R-type
                 case OR -> convertRTypeInstruction("0000000", "110"); // R-type
                 case AND -> convertRTypeInstruction("0000000", "111"); // R-type
-                case ADDI -> convertITypeInstruction("000"); // I-type
-                case XORI -> convertITypeInstruction("100"); // I-type
-                case ORI -> convertITypeInstruction("110"); // I-type
-                case ANDI -> convertITypeInstruction("111"); // I-type
-                case LB -> convertITypeInstruction("000"); // I-type (Load byte)
-                case LH -> convertITypeInstruction("001"); // I-type (Load half-word)
-                case LW -> convertITypeInstruction("010"); // I-type (Load word)
+                case ADDI -> convertITypeInstruction("0010011","000"); // I-type
+                case XORI -> convertITypeInstruction("0010011","100"); // I-type
+                case ORI -> convertITypeInstruction("0010011","110"); // I-type
+                case ANDI -> convertITypeInstruction("0010011","111"); // I-type
+                case LB -> convertITypeInstruction("0000011","000"); // I-type (Load byte)
+                case LH -> convertITypeInstruction("0000011","001"); // I-type (Load half-word)
+                case LW -> convertITypeInstruction("0000011","010"); // I-type (Load word)
                 case SB -> convertSTypeInstruction("000"); // S-type (Store byte)
                 case SH -> convertSTypeInstruction("001"); // S-type (Store half-word)
                 case SW -> convertSTypeInstruction("010"); // S-type (Store word)
@@ -77,7 +77,7 @@ public class Instruction {
         return "ERROR";
     }
 
-    private String convertITypeInstruction(String funct3) {
+    private String convertITypeInstruction(String opcode,  String funct3) {
         if (operands.size() == 3) {
             String rd = registerToBinary(operands.get(0).lexeme);
             String rs1 = registerToBinary(operands.get(1).lexeme);
@@ -87,7 +87,7 @@ public class Instruction {
             } else {
                 imm = String.format("%12s", imm).replace(' ', '0');
             }
-            return imm + rs1 + funct3 + rd + "0010011";
+            return imm + rs1 + funct3 + rd + opcode;
         }
         reportOperandError(3);
         return "ERROR";
@@ -98,6 +98,11 @@ public class Instruction {
             String imm = padBinaryString(Integer.toBinaryString(Integer.parseInt(operands.get(0).lexeme)), 12);
             String rs2 = registerToBinary(operands.get(1).lexeme);
             String rs1 = registerToBinary(operands.get(2).lexeme);
+            if (imm.length() > 12) {
+                imm = imm.substring(imm.length() - 12);
+            } else {
+                imm = String.format("%12s", imm).replace(' ', '0');
+            }
             return imm.substring(0, 7) + rs2 + rs1 + funct3 + imm.substring(7) + "0100011";
         }
         reportOperandError(3);
@@ -106,9 +111,14 @@ public class Instruction {
 
     private String convertBTypeInstruction(String funct3) {
         if (operands.size() == 3) {
-            String imm = padBinaryString(Integer.toBinaryString(Integer.parseInt(operands.get(0).lexeme)), 13);
+            String imm = padBinaryString(Integer.toBinaryString(Integer.parseInt(operands.get(0).lexeme)), 12);
             String rs2 = registerToBinary(operands.get(1).lexeme);
             String rs1 = registerToBinary(operands.get(2).lexeme);
+            if (imm.length() > 12) {
+                imm = imm.substring(imm.length() - 12);
+            } else {
+                imm = String.format("%12s", imm).replace(' ', '0');
+            }
             return imm.charAt(0) + imm.substring(2, 8) + rs2 + rs1 + funct3 + imm.substring(8, 12) + imm.charAt(1) + "1100011";
         }
         reportOperandError(3);
