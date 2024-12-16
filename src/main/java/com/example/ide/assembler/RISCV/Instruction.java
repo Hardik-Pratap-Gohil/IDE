@@ -82,6 +82,11 @@ public class Instruction {
             String rd = registerToBinary(operands.get(0).lexeme);
             String rs1 = registerToBinary(operands.get(1).lexeme);
             String imm = padBinaryString(Integer.toBinaryString(Integer.parseInt(operands.get(2).lexeme)), 12);
+            if (imm.length() > 12) {
+                imm = imm.substring(imm.length() - 12);
+            } else {
+                imm = String.format("%12s", imm).replace(' ', '0');
+            }
             return imm + rs1 + funct3 + rd + "0010011";
         }
         reportOperandError(3);
