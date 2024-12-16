@@ -1,3 +1,0 @@
-Hello from the other side. 
-
-Testing to see if committing works from vscode...
