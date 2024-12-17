@@ -75,8 +75,6 @@ public class Parser {
                 i++;
             }
 
-            // Validate operands
-            validateOperands(opcode, operands);
 
             // Add the instruction to the list, even if operands are invalid (optional, based on requirements)
             instructions.add(new Instruction(opcode, operands, errors));
@@ -85,15 +83,7 @@ public class Parser {
         return instructions;
     }
 
-    private void validateOperands(TokenType opcode, List<Token> operands) {
-        int required = requiredOperands(opcode);
-        if (operands.size() != required) {
-            AssemblerError error = new AssemblerError(currentLine,
-                    "Instruction " + opcode + " expects " + required + " operands, but got " + operands.size());
-            errors.add(error);
-            outputTextArea.appendText(error.toString() + "\n");
-        }
-    }
+
 
     private int requiredOperands(TokenType opcode) {
         switch (opcode) {

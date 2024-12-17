@@ -5,6 +5,7 @@ import javafx.scene.control.TextArea;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
 
@@ -83,17 +84,16 @@ public class RiscVAssembler {
             return;
         }
 
-        // Clear the outputTextArea first, if needed
-        outputTextArea.clear();
+        // Sort errors by line number
+        errors.sort(Comparator.comparingInt(AssemblerError::getLine));
 
-        // Append each error message to the TextArea
+        outputTextArea.clear(); // Clear existing text
         for (AssemblerError error : errors) {
-            outputTextArea.appendText(error.toString() + "\n");
+            outputTextArea.appendText("Error at line " + error.getLine() + ": " + error.getMessage() + "\n");
         }
-
-        // Optionally scroll to the top to ensure the user sees the first error
-        outputTextArea.positionCaret(0);
+        outputTextArea.positionCaret(0); // Scroll to top
     }
+
 
 
 }

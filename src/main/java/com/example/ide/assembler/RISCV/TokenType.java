@@ -12,7 +12,7 @@ public enum TokenType {
     X,
 
     // Immediate values
-    IMM,
+    IMM, IMM_FLOAT,
 
     // Update TokenType to include:
     LPAREN, // For '('

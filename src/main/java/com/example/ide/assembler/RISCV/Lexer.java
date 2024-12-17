@@ -61,6 +61,9 @@ public class Lexer {
                 case '\n':
                     line++;
                     break;
+                case '#':
+                    skipComment();
+                    break;
                 // Handle parentheses
                 case '(':
                     addToken(TokenType.LPAREN, "(");
@@ -82,24 +85,37 @@ public class Lexer {
                     break;
             }
         } catch (Exception e) {
-            throw new IllegalArgumentException("Syntax error at line " + line + ": " + e.getMessage());
+//            throw new IllegalArgumentException("Syntax error at line " + line + ": " + e.getMessage());
+            errors.add(new AssemblerError(line, e.getMessage()));
+            outputTextArea.appendText("Lexer error at line " + line + ": " + e.getMessage() + "\n");
+            skipToNextLine(); //
         }
     }
 
+    // Method to skip comments
+    private void skipComment() {
+        while (!isAtEnd() && peek() != '\n') {
+            advance(); // Consume all characters until the end of the line
+        }
+    }
+
+
+
+
     // Processes numbers (immediate values)
     private void number() {
-        System.out.println("Number detected at start: " + source.charAt(start));
-        System.out.println("Number detected at current: " + source.charAt(current));
+
+        boolean isFloatingPoint = false;
+
         // Check for optional negative sign
         if (source.charAt(start) == '-') {
             advance(); // Consume '-'
         }
 
+
         // Hexadecimal number check
         if (source.charAt(start) == '0' && (peek() == 'x' || peek() == 'X')) {
             advance(); // Consume '0'
-
-            System.out.println("Hexadecimal detected");
 
             // Capture the actual hex digits
             int hexStart = current; // Start of actual hex digits
@@ -119,18 +135,29 @@ public class Lexer {
             return;
         }
 
-        // Decimal number handling
-        while (isDigit(peek())) {
+        // Process digits and check for floating-point marker (dot '.')
+        while (isDigit(peek()) || (!isFloatingPoint && peek() == '.')) {
+            if (peek() == '.') {
+                isFloatingPoint = true; // Switch to floating-point mode
+            }
             advance();
         }
-
-        if (start == current) { // No digits found
-            throw new IllegalArgumentException("Invalid numeric value at line " + line);
-        }
-
+        // Extract the lexeme
         String lexeme = source.substring(start, current);
-        int value = Integer.parseInt(lexeme); // Parse decimal
-        addToken(TokenType.IMM, lexeme, value);
+
+        try {
+            if (isFloatingPoint) {
+                // Process floating-point number (e.g., 1.23)
+                float floatValue = Float.parseFloat(lexeme);
+                addToken(TokenType.IMM_FLOAT, lexeme, floatValue);
+            } else {
+                // Process integer number
+                int intValue = Integer.parseInt(lexeme);
+                addToken(TokenType.IMM, lexeme, intValue);
+            }
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid numeric value at line " + line + ": " + lexeme);
+        }
     }
 
     // Processes identifiers (instructions, registers, labels)
@@ -142,8 +169,16 @@ public class Lexer {
         // Extract the lexeme
         String lexeme = source.substring(start, current);
         // Match it to a TokenType
-        TokenType type = getTokenType(lexeme);
-        addToken(type, lexeme);
+        try {
+            // Match it to a TokenType
+            TokenType type = getTokenType(lexeme);
+            addToken(type, lexeme);
+        } catch (IllegalArgumentException e) {
+            // Log the error for an unrecognized token
+            errors.add(new AssemblerError(line, "Unrecognized token: " + lexeme + " at line " + line));
+            outputTextArea.appendText("Lexer Error at line " + line + ": Unrecognized token: " + lexeme + "\n");
+            skipToNextLine(); // Skip the rest of the current line to avoid further issues
+        }
     }
 
     // Matches a token to its type
